@@ -16,19 +16,20 @@ SIGNALS_FILE = 'signals.json'
 # لیست سیگنال‌ها
 signals = []
 
+# اگر فایل وجود نداشت بساز
+if not os.path.exists(SIGNALS_FILE):
+    with open(SIGNALS_FILE, 'w') as f:
+        json.dump([], f)
+
 # تابع برای لود سیگنال‌ها از فایل
 def load_signals():
     global signals
-    if os.path.exists(SIGNALS_FILE):
-        try:
-            with open(SIGNALS_FILE, 'r') as f:
-                signals = json.load(f)
-            print(f"📂 Loaded {len(signals)} signals from {SIGNALS_FILE}")
-        except Exception as e:
-            print(f"❌ Error loading signals from file: {e}")
-            signals = []
-    else:
-        print(f"📂 No signals file found, starting with empty list")
+    try:
+        with open(SIGNALS_FILE, 'r') as f:
+            signals = json.load(f)
+        print(f"📂 Loaded {len(signals)} signals from {SIGNALS_FILE}")
+    except Exception as e:
+        print(f"❌ Error loading signals from file: {e}")
         signals = []
 
 # تابع برای ذخیره سیگنال‌ها در فایل
@@ -72,7 +73,7 @@ def send_signal():
                 signals.append(data)  # اضافه کردن سیگنال جدید
             print(f"📤 Server received signal: unique_id={data['unique_id']}, lot={data['lot']}")
 
-        # ذخیره سیگنال‌ها در فایل فقط در این endpoint
+        # ذخیره سیگنال‌ها در فایل
         save_signals()
         
         return jsonify({'status': 'success'}), 200
@@ -86,7 +87,7 @@ def get_signals():
     current_time = time.time()
     expiration_time = 120  # ۲ دقیقه برای سیگنال‌های بسته‌شده (lot=0)
     
-    # حذف سیگنال‌های منقضی‌شده (lot=0 و قدیمی‌تر از ۲ دقیقه)
+    # حذف سیگنال‌های منقضی‌شده
     signals = [s for s in signals if not (s.get('lot', 0) <= 0.0 and (current_time - s.get('timestamp_received', 0) > expiration_time))]
     
     # مرتب‌سازی بر اساس open_time به‌صورت صعودی
@@ -101,4 +102,4 @@ def favicon():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Railway اینو میده
-    app.run(host='0.0.0.0', port=port, debug=False)  # debug=False برای production
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
