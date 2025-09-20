@@ -94,7 +94,11 @@ def get_signals():
     
     return jsonify(sorted_signals), 200
 
+# برای favicon.ico که مرورگر درخواست می‌کنه
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # پاسخ خالی بدون محتوا
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Railway اینو میده
-    app.run(host='0.0.0.0', port=port, debug=True)
-
+    app.run(host='0.0.0.0', port=port, debug=False)  # debug=False برای production
